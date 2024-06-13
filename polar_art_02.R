@@ -27,15 +27,15 @@ polar_art <- function(seed, n, palette) {
     )) +
     geom_segment(show.legend = FALSE) +
     coord_polar() +
-    scale_y_continuous(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(4, 4)) +
     scale_x_continuous(expand = c(0, 0)) + 
     scale_colour_gradientn(colours = palette) + 
-    scale_size(range = c(0, 10)) + 
+    scale_size(range = c(0, 0)) + 
     theme_void()
 }
 
 polar_art(
-  seed = 3, 
+  seed = 25, 
   n = 100, 
-  palette = c("lavender", "pink2", "cornflowerblue")
+  palette = c("lavender", "cornflowerblue", "pink")
 )

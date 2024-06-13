@@ -34,49 +34,83 @@ mpg %>% # pipe data to plotting
 ```{r}
 polar_art <- function(seed, n, palette) {
   
-  # set the state of the random number generator
-  set.seed(seed)
+  set.seed(seed) # setting the state of the random number generator
   
-  # data frame containing random values for 
-  # aesthetics we might want to use in the art
-  dat <- tibble(
-    x0 = runif(n),
-    y0 = runif(n),
-    x1 = x0 + runif(n, min = -4, max = 4),
-    y1 = y0 + runif(n, min = -4, max = 4),
-    shade = runif(n), 
-    size = runif(n)
-  )
+
+  dat <- tibble( # creating data frame of random values
+    x0 = runif(n), # creating random numbers for x0 column
+    y0 = runif(n), # creating random numbers for y0 column
+    x1 = x0 + runif(n, min = -1, max = 4), # creating random data for x1 column
+    y1 = y0 + runif(n, min = -4, max = 2), # creating random data for y1 column
+    shade = runif(n), # creating random data for shade column
+    size = runif(n)) # size column random data 
   
-  # plot segments in various colours, using 
-  # polar coordinates and a gradient palette
-  dat %>% 
-    ggplot(aes(
-      x = x0,
-      y = y0,
-      xend = x1,
-      yend = y1,
-      colour = shade,
-      linewidth = 1,
+  
+  dat %>% # creating plot with data from random data frame
+    ggplot(aes( # setting aesthetics for the plot 
+      x = x0, # x-axis using data from x0 column 
+      y = y0, # y-axis using data from y0 column
+      xend = x1, # end of line segment on x-axis
+      yend = y1, # end of line segment on y-axis
+      colour = shade, # setting color to shade column
+      linewidth = size, # setting line width to size column
     )) +
-    geom_segment(show.legend = FALSE) +
-    coord_polar() +
-    scale_y_continuous(expand = c(0, 1)) +
-    scale_x_continuous(expand = c(0, 1)) + 
-    scale_colour_gradientn(colours = palette) + 
-    scale_size(range = c(0, 10)) + 
-    theme_void()
+    geom_segment(show.legend = FALSE) + # plotting segments 
+    coord_polar() + # organizing segments in circle
+    scale_y_continuous(expand = c(0.3, 4)) + # customizing scale of y axis
+    scale_x_continuous(expand = c(-1, 0)) + # customizing scale of x axis
+    scale_colour_gradientn(colours = palette) + # setting colors to created palette 
+    scale_size(range = c(-1, 1)) + # scaling lines to designated range of size
+    theme_void() # setting minimalistic theme 
 }
 
-polar_art(
-  seed = 3, 
-  n = 100, 
-  palette = c("lavender", "pink2", "cornflowerblue")
-)
+polar_art( # using polar_art function to generate art
+  seed = 25, # setting seed 
+  n = 100, # creating 100 lines
+  palette = c("lavender", "cornflowerblue", "pink")
+) # creating blue, pink, and lavender color palette 
 
 ```
 
-## Exercise 3. 
+## Exercise 3. Colors
+
+```{r}
+# calling simple_canva function to visualize outputs
+sample_canva <- function(seed = NULL) {
+  if(!is.null(seed)) set.seed(seed)
+  sample(ggthemes::canva_palettes, 1)[[1]]
+}
+
+show_col(sample_canva(seed = 41))
+```
+
+```{r}
+# writing my own random palette generator
+sample_named_colors <- function(n) { # creating a sample_named_colors that takes input n
+  colors(distinct = TRUE) # using list of 502 colors
+  return(sample(colors(distinct = TRUE), n, replace = FALSE)) # generates random sample of n colors from list
+}
+
+
+# running polar_art function with new function
+polar_art(seed = 8, n = 30, palette = sample_named_colors(13))
+
+```
+
+
+```{r}
+# creating vector of 600 distinct colors
+colors_600 <- unlist(ggthemes::canva_palettes)
+
+# creating palette generating function from set of 600
+sample_600_colors <- function(seed = NULL, n = 4) { 
+  if(!is.null(seed)) set.seed(seed) # using seed to randomly select colors
+  sample(colors_600, 4) # generate random colors from vector
+}
+
+show_col(sample_600_colors(seed = 4, n = 4)) # testing function
+
+```
 
 
 
