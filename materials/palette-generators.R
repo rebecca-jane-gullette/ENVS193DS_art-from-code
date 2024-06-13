@@ -13,5 +13,3 @@ sample_canva2 <- function(seed = NULL, n = 4) {
     (\(x) colorRampPalette(x)(n))()  
 }
 
-show_col(sample_canva(seed = 22))
-polar_art(seed = 3, n = 150, palette = sample_canva(seed = 22))

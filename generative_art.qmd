@@ -1,24 +1,30 @@
 ---
 title: "Generative Art Assignment"
 date: 06/11/2024
-author: "Rebecca-Jane Gullette"
 format: html
+author: "Rebecca-Jane Gullette"
+execute: 
+  warning: false
+  message: true
 ---
 # Getting Started
 
 ```{r}
-#loading packages 
+# loading packages 
+
 library(ggplot2) # making visualizations
 library(tibble) # data representation
-#color palettes
+# color palettes
 library(scales) 
 library(ggthemes)
+# manage data frame and manipulation
+library(dplyr)
 
 # data
 mpg
 ```
 
-## Exercise 1. Artwork using ggplot2 and mpg data set
+## Exercise 1. Art is theft
 
 ```{r}
 mpg %>% # pipe data to plotting 
@@ -30,7 +36,7 @@ mpg %>% # pipe data to plotting
   scale_color_brewer(palette = "PuBuGn") # setting to color scheme from R Color Brewer
 ```
 
-## Exercise 2. Modifying polar_art() functiton 
+## Exercise 2. Technique 
 ```{r}
 polar_art <- function(seed, n, palette) {
   
@@ -72,7 +78,7 @@ polar_art( # using polar_art function to generate art
 
 ```
 
-## Exercise 3. Colors
+## Exercise 3. Color
 
 ```{r}
 # calling simple_canva function to visualize outputs
@@ -111,7 +117,90 @@ sample_600_colors <- function(seed = NULL, n = 4) {
 show_col(sample_600_colors(seed = 4, n = 4)) # testing function
 
 ```
+## Exercise 4. Composition 
+```{r}
+# using polar_styled_plots.R to explore flexibility in art generation
 
+# function to sample canva palettes 
+sample_canva <- function(seed = NULL) {
+  if(!is.null(seed)) set.seed(seed)
+  sample(ggthemes::canva_palettes, 1)[[1]]
+}
+
+
+sample_data <- function(seed = NULL, n = 100){ # creating random data function
+  if(!is.null(seed)) set.seed(seed)
+  dat <- tibble(
+    x0 = runif(n),
+    y0 = runif(n),
+    x1 = x0 + runif(n, min = -.2, max = .2),
+    y1 = y0 + runif(n, min = -.2, max = .2),
+    shade = runif(n), 
+    size = runif(n),
+    shape = factor(sample(0:22, size = n, replace = TRUE))
+  )
+}
+
+# function to generate polar styled plot 
+polar_styled_plot <- function(data = NULL, palette) {
+  ggplot(
+    data = data,
+    mapping = aes(
+      x = x0,
+      y = y0,
+      xend = x1,
+      yend = y1,
+      colour = shade,
+      size = size
+    )) + 
+    coord_polar(clip = "off") +
+    scale_y_continuous(
+      expand = c(0, 0),
+      limits = c(0, 1), 
+      oob = scales::oob_keep
+    ) +
+    scale_x_continuous(
+      expand = c(0, 0), 
+      limits = c(0, 1), 
+      oob = scales::oob_keep
+    ) + 
+    scale_colour_gradientn(colours = palette) + 
+    scale_size(range = c(0, 10)) + 
+    theme_void() + 
+    guides(
+      colour = guide_none(),
+      size = guide_none(),
+      fill = guide_none(),
+      shape = guide_none()
+    )
+}
+
+# inputs 1. 
+dat1 <- sample_data(seed = 4, n = 100)
+polar_styled_plot(dat1, palette = sample_canva(seed = 5)) + 
+  geom_point(data = dat1 %>% mutate(size = size / 4)) +
+  geom_segment(data = dat1, 
+               lineend = "round",
+               linetype = "dotdash")
+```
+```{r}
+# inputs 2.
+dat2 <- sample_data(seed = 13, n = 125)
+polar_styled_plot(dat2, palette = sample_canva(seed = 25)) +
+  geom_segment(data = dat2 %>% mutate(size = size * 2),
+               lineend = "round") + 
+  geom_segment(data = dat2 %>% mutate (size = size / 10),
+               linened = "round",
+               color = "white") + 
+  geom_point(data = dat2,
+             shape = 20)
+```
+
+```{r}
+# creating my own styled plot function 
+
+
+```
 
 
 
