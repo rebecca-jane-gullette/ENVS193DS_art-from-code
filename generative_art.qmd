@@ -7,7 +7,6 @@ execute:
   warning: false
   message: true
 ---
-# Getting Started
 
 ```{r}
 # loading packages 
@@ -19,10 +18,20 @@ library(scales)
 library(ggthemes)
 # manage data frame and manipulation
 library(dplyr)
+library(tidyr)
 
-# data
-mpg
+library(purrr)
+library(ambient)
+library(tictoc)
+library(gifski)
+
+
+library(here)
+
 ```
+
+
+# Getting Started
 
 ## Exercise 1. Art is theft
 
@@ -36,7 +45,8 @@ mpg %>% # pipe data to plotting
   scale_color_brewer(palette = "PuBuGn") # setting to color scheme from R Color Brewer
 ```
 
-## Exercise 2. Technique 
+## Exercise 2. Technique
+
 ```{r}
 polar_art <- function(seed, n, palette) {
   
@@ -99,10 +109,9 @@ sample_named_colors <- function(n) { # creating a sample_named_colors that takes
 
 
 # running polar_art function with new function
-polar_art(seed = 8, n = 30, palette = sample_named_colors(13))
+polar_art(seed = 8, n = 30, palette = sample_named_colors(5))
 
 ```
-
 
 ```{r}
 # creating vector of 600 distinct colors
@@ -117,7 +126,9 @@ sample_600_colors <- function(seed = NULL, n = 4) {
 show_col(sample_600_colors(seed = 4, n = 4)) # testing function
 
 ```
-## Exercise 4. Composition 
+
+## Exercise 4. Composition
+
 ```{r}
 # using polar_styled_plots.R to explore flexibility in art generation
 
@@ -183,6 +194,7 @@ polar_styled_plot(dat1, palette = sample_canva(seed = 5)) +
                lineend = "round",
                linetype = "dotdash")
 ```
+
 ```{r}
 # inputs 2.
 dat2 <- sample_data(seed = 13, n = 125)
@@ -190,7 +202,7 @@ polar_styled_plot(dat2, palette = sample_canva(seed = 25)) +
   geom_segment(data = dat2 %>% mutate(size = size * 2),
                lineend = "round") + 
   geom_segment(data = dat2 %>% mutate (size = size / 10),
-               linened = "round",
+               lineend = "round",
                color = "white") + 
   geom_point(data = dat2,
              shape = 20)
@@ -198,10 +210,539 @@ polar_styled_plot(dat2, palette = sample_canva(seed = 25)) +
 
 ```{r}
 # creating my own styled plot function 
+my_styled_plot <- function(data = NULL, palette) {
+   ggplot(
+    data = data,
+    mapping = aes(
+      x = x0,
+      y = y0,
+      xend = x1,
+      yend = y1,
+      colour = shade,
+      size = size
+    )) +
+    scale_y_continuous(
+      expand = c(0, 0),
+      limits = c(0, 1), 
+      oob = scales::oob_keep
+    ) +
+    scale_x_continuous(
+      expand = c(0, 0), 
+      limits = c(0, 1), 
+      oob = scales::oob_keep
+    ) + 
+    scale_colour_gradientn(colours = palette) + 
+    scale_size(range = c(0, 15)) + 
+    theme_void() + 
+    guides(
+      colour = guide_none(),
+      size = guide_none(),
+      fill = guide_none(),
+      shape = guide_none()
+    )
+}
 
+dat3 <- sample_data(seed = 3, n = 100)
+my_styled_plot(dat3, palette = sample_canva(seed = 41)) +
+  geom_segment(data = dat3, 
+               lineend = "round",
+               alpha = 0.7) + 
+  geom_segment(data = dat3 %>% mutate(shade = shade * 2, size = size / 3),
+               lineend = "round",
+               linewidth = 3) + 
+  geom_point(data = dat3 %>% mutate(x0 = x0 / 1.5, y0 = y0 * 1.5, x0 = x0 * 1.5, y1 = y1 * 1.5, size = size *1.5, shade = shade / 2), 
+             shape = 21)
 
 ```
 
+# c. Art of your choice: Polygon Tricks
+
+## Exercise 1. Semi Transparent Polygons
+
+```{r}
+square <- tibble(
+  x = c(0, 1, 1, 0, 0),
+  y = c(0, 0, 1, 1, 0),
+  seg_len = c(1, 1, 1, 1, 0)
+)
+
+show_polygon <- function(polygon, show_vertices = TRUE, colour = "black", ...) {
+  
+  pic <- ggplot(polygon, aes(x, y)) +
+    geom_polygon(fill = NA, colour = colour, show.legend = FALSE, ...) + 
+    coord_equal() + 
+    theme_void()
+  
+  if(show_vertices == TRUE) {
+    pic <- pic + geom_point(size = 2, colour = colour)
+  }
+  return(pic)
+}
+
+sample_edge <- function(polygon) {
+  sample(nrow(polygon), 1, prob = polygon$seg_len)
+}
+
+edge_length <- function(x1, y1, x2, y2) {
+  sqrt((x1 - x2)^2 + (y1 - y2)^2)
+}
+
+edge_noise <- function(size) {
+  runif(1, min = -size/2, max = size/2)
+}
+
+insert_edge <- function(polygon, noise) {
+  
+  # sample and edge and remember its length
+  ind <- sample_edge(polygon)
+  len <- polygon$seg_len[ind]
+  
+  # one endpoint of the old edge
+  last_x <- polygon$x[ind]
+  last_y <- polygon$y[ind]
+  
+  # the other endpoint of the old edge
+  next_x <- polygon$x[ind + 1]
+  next_y <- polygon$y[ind + 1]
+  
+  # location of the new point to be inserted: noise 
+  # is scaled proportional to the length of the old edge
+  new_x <- (last_x + next_x) / 2 + edge_noise(len * noise)
+  new_y <- (last_y + next_y) / 2 + edge_noise(len * noise)
+  
+  # the new row for insertion into the tibble, 
+  # containing coords and length of the 'new' edge
+  new_row <- tibble(
+    x = new_x,
+    y = new_y,
+    seg_len = edge_length(new_x, new_y, next_x, next_y)
+  )
+  
+  # update the length of the 'old' edge
+  polygon$seg_len[ind] <- edge_length(
+    last_x, last_y, new_x, new_y
+  )
+  
+  # insert a row into the tibble
+  bind_rows(
+    polygon[1:ind, ],
+    new_row,
+    polygon[-(1:ind), ]
+  )
+}
+
+grow_polygon <- function(polygon, iterations, noise, seed = NULL) {
+  if(!is.null(seed)) set.seed(seed)
+  for(i in 1:iterations) polygon <- insert_edge(polygon, noise)
+  return(polygon)
+}
 
 
 
+# modify this code
+pic <- square |> 
+  grow_polygon(iterations = 1500, noise = 1, seed = 4) |> 
+  show_polygon(show_vertices = FALSE)
+
+plot(pic)
+
+```
+
+```{r}
+grow_multipolygon <- function(base_shape, n, seed = NULL, ...) {
+  if(!is.null(seed)) set.seed(seed)
+  polygons <- list()
+  for(i in 1:n) {
+    polygons[[i]] <- grow_polygon(base_shape, ...)
+  }
+  polygons <- bind_rows(polygons, .id = "id")
+  polygons
+}
+
+show_multipolygon <- function(polygon, fill, alpha = .02, ...) {
+  ggplot(polygon, aes(x, y, group = id)) +
+    geom_polygon(colour = NA, alpha = alpha, fill = fill, ...) + 
+    coord_equal() + 
+    theme_void()
+}
+
+
+tic()
+dat <- square |> 
+  grow_polygon(iterations = 1500, noise = 1, seed = 4) %>% 
+  grow_multipolygon(n = 15, iterations = 200, noise = 0.7, seed = 3)
+pic <- show_multipolygon(dat, fill = "#189AB4", alpha = .3)
+plot(pic)
+toc()
+```
+
+## Exercise 2. Smudged Hexagon
+
+```{r}
+
+edge_length <- function(x1, y1, x2, y2) {
+  sqrt((x1 - x2)^2 + (y1 - y2)^2)
+}
+
+edge_noise <- function(size) {
+  runif(1, min = -size/2, max = size/2)
+}
+
+sample_edge_l <- function(polygon) {
+  sample(length(polygon), 1, prob = map_dbl(polygon, ~ .x$seg_len))
+}
+
+insert_edge_l <- function(polygon, noise) {
+  
+  ind <- sample_edge_l(polygon)
+  len <- polygon[[ind]]$seg_len
+  
+  last_x <- polygon[[ind]]$x
+  last_y <- polygon[[ind]]$y
+  
+  next_x <- polygon[[ind + 1]]$x
+  next_y <- polygon[[ind + 1]]$y
+  
+  new_x <- (last_x + next_x) / 2 + edge_noise(len * noise)
+  new_y <- (last_y + next_y) / 2 + edge_noise(len * noise)
+  
+  new_point <- list(
+    x = new_x,
+    y = new_y,
+    seg_len = edge_length(new_x, new_y, next_x, next_y)
+  )
+  
+  polygon[[ind]]$seg_len <- edge_length(
+    last_x, last_y, new_x, new_y
+  )
+  
+  c(
+    polygon[1:ind],
+    list(new_point),
+    polygon[-(1:ind)]
+  )
+}
+
+grow_polygon_l <- function(polygon, iterations, noise, seed = NULL) {
+  if(!is.null(seed)) set.seed(seed)
+  for(i in 1:iterations) polygon <- insert_edge_l(polygon, noise)
+  return(polygon)
+}
+
+grow_multipolygon_l <- function(base_shape, n, seed = NULL, ...) {
+  if(!is.null(seed)) set.seed(seed)
+  polygons <- list()
+  for(i in 1:n) {
+    polygons[[i]] <- grow_polygon_l(base_shape, ...) |>
+      transpose() |>
+      as_tibble() |>
+      mutate(across(.fn = unlist))
+  }
+  polygons <- bind_rows(polygons, .id = "id")
+  polygons
+}
+
+show_multipolygon <- function(polygon, fill, alpha = .02, ...) {
+  ggplot(polygon, aes(x, y, group = id)) +
+    geom_polygon(colour = NA, alpha = alpha, fill = fill, ...) + 
+    coord_equal() + 
+    theme_void()
+}
+
+
+
+splotch <- function(seed, layers = 13) {
+  set.seed(seed)
+  square_l <- transpose(tibble(
+    x = c(0, 1, 1, 0, 0),
+    y = c(0, 0, 1, 1, 0),
+    seg_len = c(1, 1, 1, 1, 0)
+  ))
+  square_l |> 
+    grow_polygon_l(iterations = 10, noise = .5, seed = seed) |>
+    grow_multipolygon_l(n = layers, iterations = 500, noise = .8, seed = seed) 
+}
+
+dat <- splotch(seed = 1)
+pic <- dat |> show_multipolygon(fill = "#21B6A8", alpha = .3)
+ggsave(
+  filename = here("output", "mysplotch.png"), 
+  plot = pic,
+  width = 2000,
+  height = 2000,
+  units = "px",
+  dpi = 300,
+  bg = "black"
+)
+
+
+smudged_hexagon <- function(seed, noise1 = 0.2, noise2 = 1.5, noise3 = 0.4) {
+  set.seed(seed)
+  
+  # define hexagonal base shape
+  theta <- (0:6) * pi / 3
+  hexagon <- tibble(
+    x = sin(theta),
+    y = cos(theta),
+    seg_len = edge_length(x, y, lead(x), lead(y))
+  )
+  hexagon$seg_len[7] <- 0
+  hexagon <- transpose(hexagon)
+  base <- hexagon |> 
+    grow_polygon_l(
+      iterations = 60, 
+      noise = noise1
+    )
+  
+  # define intermediate-base-shapes in clusters
+  polygons <- list()
+  ijk <- 0
+  for(i in 1:3) {
+    base_i <- base |> 
+      grow_polygon_l(
+        iterations = 50, 
+        noise = noise2
+      )
+    
+    for(j in 1:3) {
+      base_j <- base_i |> 
+        grow_polygon_l(
+          iterations = 50, 
+          noise = noise2
+        )
+      
+      # grow 10 polygons per intermediate-base
+      for(k in 1:10) {
+        ijk <- ijk + 1
+        polygons[[ijk]] <- base_j |>
+          grow_polygon_l(
+            iterations = 500, 
+            noise = noise3
+          ) |>
+          transpose() |>
+          as_tibble() |>
+          mutate(across(.fn = unlist))
+      }
+    }
+  }
+  
+  # return as data frame
+  bind_rows(polygons, .id = "id")
+}
+
+
+dat <- smudged_hexagon(seed = 88)
+pic <- dat |> show_multipolygon(fill = "#F582A8", alpha = 0.5)
+ggsave(
+  filename = here("output", "mysmudged-hexagon.png"), 
+  plot = pic,
+  width = 2000,
+  height = 2000,
+  units = "px",
+  dpi = 300,
+  bg = "black"
+)
+
+```
+
+![My Splotch](output/mysplotch.png){fig-align="center"}
+
+![My Smudged Hexagon](output/mysmudged-hexagon.png){fig-align="center"}
+
+## Exercise 3. Perlin Heart
+
+```{r}
+show_polygon <- function(polygon, show_vertices = TRUE, ...) {
+  
+  pic <- ggplot(polygon, aes(x, y)) +
+    geom_polygon(colour = "#D13055", fill = NA, show.legend = FALSE,
+                 linewidth = 10) + 
+    coord_equal() + 
+    theme_void()
+  
+  if(show_vertices == TRUE) {
+    pic <- pic + geom_point(colour = "#D13055", size = 3)
+  }
+  return(pic)
+}
+
+heart_x <- function(angle) {
+  x <- (16 * sin(angle) ^ 3) / 17
+  return(x - mean(x))
+}
+
+heart_y <- function(angle) {
+  y <- (13 * cos(angle) - 5 * cos(2 * angle) - 2 * cos(3 * angle) -
+          cos(4 * angle)) / 17
+  return(y - mean(y))
+}
+
+normalise_radius <- function(x, min, max) {
+  normalise(x, from = c(-0.5, 0.5), to = c(min, max))
+}
+
+perlin_heart <- function(n = 200, 
+                         freq_init = 0.8,
+                         octaves = 4, 
+                         r_min = 1, 
+                         r_max = 2,
+                         x_shift = 0,
+                         y_shift = 0,
+                         id = NA,
+                         seed = NULL) {
+  if(!is.null(seed)) set.seed(seed)
+  tibble(
+    angle = seq(0, 2*pi, length.out = n),
+    x_base = cos(angle),
+    y_base = sin(angle),
+    radius = fracture(
+      x = x_base, 
+      y = y_base, 
+      freq_init = freq_init,
+      noise = gen_perlin, 
+      fractal = fbm, 
+      octaves = octaves
+    ) |>
+      normalise_radius(r_min, r_max),
+    x = radius * heart_x(angle) + x_shift,
+    y = radius * heart_y(angle) + y_shift,
+    id = id
+  )
+}
+
+set.seed(10); 
+pic <- perlin_heart(freq_init = .7) %>% 
+  show_polygon(FALSE)
+plot(pic)
+```
+
+## Exercise 4. Grid of Hearts
+
+```{r}
+perlin_heart_grid <- function(nx = 10, ny = 6, noise = NULL, seed = NULL) {
+  if(!is.null(seed)) set.seed(seed)
+  
+  heart_settings <- expand_grid(
+    r_min = .3, 
+    r_max = .4, 
+    x_shift = 1:nx, 
+    y_shift = 1:ny
+  ) |>
+    mutate(id = row_number()) 
+  
+  heart_data <-  pmap_dfr(heart_settings, perlin_heart)
+  
+  heart_data |>
+    ggplot(aes(x, y, group = id, fill = sample(id))) +
+    geom_polygon(size = 0, 
+                 alpha = 0.7,
+                 show.legend = FALSE) +
+    theme_void() +
+    scale_fill_gradientn(colours = sample_canva(34)) +
+    coord_equal(xlim = c(0, nx + 1), ylim = c(0, ny + 1))
+}
+
+heartspic <- perlin_heart_grid(seed = 400, noise = 3) 
+plot(heartspic)
+```
+
+## Exercise 5. Perlin Heart Grid 2
+
+```{r}
+# creating function for x axis angle
+heart_x <- function(angle) {
+  x <- (16 * sin(angle) ^ 3) / 17
+  return(x - mean(x))
+}
+
+# creating function for y axis angle 
+heart_y <- function(angle) {
+  y <- (13 * cos(angle) - 5 * cos(2 * angle) - 2 * cos(3 * angle) -
+          cos(4 * angle)) / 17
+  return(y - mean(y))
+}
+
+normalise_radius <- function(x, min, max) {
+  normalise(x, from = c(-0.5, 0.5), to = c(min, max))
+}
+
+perlin_heart2 <- function(n = 200, 
+                          freq_init = 0.5,
+                          octaves = 2, 
+                          r_min = 0, 
+                          r_max = 1,
+                          w_min = 0,
+                          w_max = 4,
+                          rot = 0.3,
+                          x_shift = 0,
+                          y_shift = 0,
+                          id = NA,
+                          seed = NULL) {
+  if(!is.null(seed)) set.seed(seed)
+  tibble(
+    angle = seq(0, 2*pi, length.out = n),
+    
+    radius = fracture(
+      x = cos(angle), 
+      y = sin(angle), 
+      freq_init = freq_init,
+      noise = gen_perlin, 
+      fractal = fbm, 
+      octaves = octaves
+    ) |>
+      normalise_radius(r_min, r_max),
+    
+    x = radius * heart_x(angle) + x_shift,
+    y = radius * heart_y(angle) + y_shift,
+    
+    width = fracture(
+      x = cos(angle + rot), 
+      y = sin(angle + rot), 
+      freq_init = freq_init,
+      noise = gen_perlin, 
+      fractal = fbm, 
+      octaves = octaves
+    ) |>
+      normalise(to = c(w_min, w_max)),
+    
+    id = id
+  )
+}
+
+perlin_heart_grid2 <- function(nx = 4, ny = 2, seed = NULL) {
+  if(!is.null(seed)) set.seed(seed)
+  
+  heart_settings <- expand_grid(
+    r_min = .3, 
+    r_max = .5, 
+    w_min = .02,
+    w_max = 6,
+    x_shift = 1:nx, 
+    y_shift = 1:ny
+  ) |>
+    mutate(
+      n = 150,
+      x_shift = x_shift + runif(n(), -.1, .1),
+      y_shift = y_shift + runif(n(), -.1, .1),
+      rot = runif(n(), -.1, .1),
+      id = row_number()
+    ) 
+  
+  heart_data <-  pmap_dfr(heart_settings, perlin_heart2)
+  
+  heart_data |>
+    ggplot(aes(x, y, group = id, colour = sample(id), size = width)) +
+    geom_path(show.legend = FALSE) +
+    theme_void() +
+    scale_size_identity() +
+    scale_colour_gradientn(colours = sample_canva(22)) +
+    scale_x_continuous(expand = c(-1, 0)) +
+    scale_y_continuous(expand = c(0, 0)) +
+    coord_fixed(xlim = c(0, nx + 1), ylim = c(0, ny + 1))
+}
+
+heartgrid2 <- perlin_heart_grid2(seed = 555)
+plot(heartgrid2)
+```
+
+# d. Art of your choice: Pixel Filters

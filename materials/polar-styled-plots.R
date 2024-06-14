@@ -51,5 +51,5 @@ polar_styled_plot <- function(data = NULL, palette) {
       fill = guide_none(),
       shape = guide_none()
     )
-}
+} 
 
