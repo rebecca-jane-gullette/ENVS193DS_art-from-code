@@ -1,11 +1,11 @@
 ---
 title: "Generative Art Assignment"
 date: 06/11/2024
-format: html
 author: "Rebecca-Jane Gullette"
 execute: 
   warning: false
   message: true
+format: html
 ---
 
 ```{r}
@@ -19,7 +19,7 @@ library(ggthemes)
 # manage data frame and manipulation
 library(dplyr)
 library(tidyr)
-
+# polygon tricks packages 
 library(purrr)
 library(ambient)
 library(tictoc)
@@ -99,7 +99,7 @@ sample_canva <- function(seed = NULL) {
   if(!is.null(seed)) set.seed(seed)
   sample(ggthemes::canva_palettes, 1)[[1]]
 }
-
+# displaying palette 
 show_col(sample_canva(seed = 41))
 ```
 
@@ -144,7 +144,7 @@ sample_canva <- function(seed = NULL) {
 
 sample_data <- function(seed = NULL, n = 100){ # creating random data function
   if(!is.null(seed)) set.seed(seed)
-  dat <- tibble(
+  dat <- tibble( # generate data frome of n rows 
     x0 = runif(n),
     y0 = runif(n),
     x1 = x0 + runif(n, min = -.2, max = .2),
@@ -157,7 +157,7 @@ sample_data <- function(seed = NULL, n = 100){ # creating random data function
 
 # function to generate polar styled plot 
 polar_styled_plot <- function(data = NULL, palette) {
-  ggplot(
+  ggplot( # base plot aesthetics 
     data = data,
     mapping = aes(
       x = x0,
@@ -167,7 +167,7 @@ polar_styled_plot <- function(data = NULL, palette) {
       colour = shade,
       size = size
     )) + 
-    coord_polar(clip = "off") +
+    coord_polar(clip = "off") + # orient points in circular pattern 
     scale_y_continuous(
       expand = c(0, 0),
       limits = c(0, 1), 
@@ -177,10 +177,10 @@ polar_styled_plot <- function(data = NULL, palette) {
       expand = c(0, 0), 
       limits = c(0, 1), 
       oob = scales::oob_keep
-    ) + 
+    ) + # modify colors 
     scale_colour_gradientn(colours = palette) + 
     scale_size(range = c(0, 10)) + 
-    theme_void() + 
+    theme_void() + # eliminate other plot elements 
     guides(
       colour = guide_none(),
       size = guide_none(),
@@ -189,26 +189,26 @@ polar_styled_plot <- function(data = NULL, palette) {
     )
 }
 
-# inputs 1. 
-dat1 <- sample_data(seed = 4, n = 100)
-polar_styled_plot(dat1, palette = sample_canva(seed = 5)) + 
-  geom_point(data = dat1 %>% mutate(size = size / 4)) +
-  geom_segment(data = dat1, 
-               lineend = "round",
-               linetype = "dotdash")
+# polar styled plot first experimentation 
+dat1 <- sample_data(seed = 4, n = 100) # generate data 
+polar_styled_plot(dat1, palette = sample_canva(seed = 5)) +  
+  geom_point(data = dat1 %>% mutate(size = size / 4)) + # decrease size 
+  geom_segment(data = dat1, # create segment lines
+               lineend = "round", # with curved ends 
+               linetype = "dotdash") # and dot dash patern 
 ```
 
 ```{r}
-# inputs 2.
-dat2 <- sample_data(seed = 13, n = 125)
-polar_styled_plot(dat2, palette = sample_canva(seed = 25)) +
-  geom_segment(data = dat2 %>% mutate(size = size * 2),
-               lineend = "round") + 
-  geom_segment(data = dat2 %>% mutate (size = size / 10),
+# another polar styled plot 
+dat2 <- sample_data(seed = 13, n = 125) # create data 
+polar_styled_plot(dat2, palette = sample_canva(seed = 25)) + 
+  geom_segment(data = dat2 %>% mutate(size = size * 2), # increase size
+               lineend = "round") + # curved end of lines
+  geom_segment(data = dat2 %>% mutate (size = size / 10), # decrease size
                lineend = "round",
-               color = "white") + 
+               color = "white") + # make white
   geom_point(data = dat2,
-             shape = 20)
+             shape = 20) # plot rainbow points 
 ```
 
 ```{r}
@@ -245,6 +245,7 @@ my_styled_plot <- function(data = NULL, palette) {
     )
 }
 
+
 dat3 <- sample_data(seed = 3, n = 100)
 my_styled_plot(dat3, palette = sample_canva(seed = 41)) +
   geom_segment(data = dat3, 
@@ -263,12 +264,13 @@ my_styled_plot(dat3, palette = sample_canva(seed = 41)) +
 ## Exercise 1. Semi Transparent Polygons
 
 ```{r}
+# data points for square 
 square <- tibble(
   x = c(0, 1, 1, 0, 0),
   y = c(0, 0, 1, 1, 0),
   seg_len = c(1, 1, 1, 1, 0)
 )
-
+# generate polygon to distort 
 show_polygon <- function(polygon, show_vertices = TRUE, colour = "black", ...) {
   
   pic <- ggplot(polygon, aes(x, y)) +
@@ -282,34 +284,35 @@ show_polygon <- function(polygon, show_vertices = TRUE, colour = "black", ...) {
   return(pic)
 }
 
+# distort by breaking edges 
 sample_edge <- function(polygon) {
   sample(nrow(polygon), 1, prob = polygon$seg_len)
 }
-
+# function to modify edge lengths
 edge_length <- function(x1, y1, x2, y2) {
   sqrt((x1 - x2)^2 + (y1 - y2)^2)
 }
-
+# function to change noise 
 edge_noise <- function(size) {
   runif(1, min = -size/2, max = size/2)
 }
-
+# function to insert additional edges 
 insert_edge <- function(polygon, noise) {
   
   # sample and edge and remember its length
   ind <- sample_edge(polygon)
   len <- polygon$seg_len[ind]
   
-  # one endpoint of the old edge
+  # one endpoint of the original edge
   last_x <- polygon$x[ind]
   last_y <- polygon$y[ind]
   
-  # the other endpoint of the old edge
+  # other endpoint of the original edge
   next_x <- polygon$x[ind + 1]
   next_y <- polygon$y[ind + 1]
   
-  # location of the new point to be inserted: noise 
-  # is scaled proportional to the length of the old edge
+  # storing new x and y axis data 
+  # scaling noise to be proportional to change in edge length 
   new_x <- (last_x + next_x) / 2 + edge_noise(len * noise)
   new_y <- (last_y + next_y) / 2 + edge_noise(len * noise)
   
@@ -333,7 +336,7 @@ insert_edge <- function(polygon, noise) {
     polygon[-(1:ind), ]
   )
 }
-
+# use grow polygon function to perform many interations 
 grow_polygon <- function(polygon, iterations, noise, seed = NULL) {
   if(!is.null(seed)) set.seed(seed)
   for(i in 1:iterations) polygon <- insert_edge(polygon, noise)
@@ -342,16 +345,17 @@ grow_polygon <- function(polygon, iterations, noise, seed = NULL) {
 
 
 
-# modify this code
-pic <- square |> 
-  grow_polygon(iterations = 1500, noise = 1, seed = 4) |> 
+# plot final distorted polygon with increased iterations
+polygonpic <- square %>% 
+  grow_polygon(iterations = 1500, noise = 1, seed = 4) %>% 
   show_polygon(show_vertices = FALSE)
 
-plot(pic)
+plot(polygonpic)
 
 ```
 
 ```{r}
+# use functions created above 
 grow_multipolygon <- function(base_shape, n, seed = NULL, ...) {
   if(!is.null(seed)) set.seed(seed)
   polygons <- list()
@@ -369,9 +373,9 @@ show_multipolygon <- function(polygon, fill, alpha = .02, ...) {
     theme_void()
 }
 
-
+# fill in deforemed polygon created above with color 
 tic()
-dat <- square |> 
+dat <- square %>%  
   grow_polygon(iterations = 1500, noise = 1, seed = 4) %>% 
   grow_multipolygon(n = 15, iterations = 200, noise = 0.7, seed = 3)
 pic <- show_multipolygon(dat, fill = "#189AB4", alpha = .3)
@@ -382,19 +386,20 @@ toc()
 ## Exercise 2. Smudged Hexagon
 
 ```{r}
-
-edge_length <- function(x1, y1, x2, y2) {
+# functions from smidged hexagon r script 
+edge_length <- function(x1, y1, x2, y2) { # generate shape
   sqrt((x1 - x2)^2 + (y1 - y2)^2)
 }
 
-edge_noise <- function(size) {
+edge_noise <- function(size) { # distort edges 
   runif(1, min = -size/2, max = size/2)
 }
 
-sample_edge_l <- function(polygon) {
+sample_edge_l <- function(polygon) { # break edges 
   sample(length(polygon), 1, prob = map_dbl(polygon, ~ .x$seg_len))
 }
 
+# insert edge function to further distort shape 
 insert_edge_l <- function(polygon, noise) {
   
   ind <- sample_edge_l(polygon)
@@ -425,50 +430,51 @@ insert_edge_l <- function(polygon, noise) {
     polygon[-(1:ind)]
   )
 }
-
+# function to grow polygon length 
 grow_polygon_l <- function(polygon, iterations, noise, seed = NULL) {
   if(!is.null(seed)) set.seed(seed)
   for(i in 1:iterations) polygon <- insert_edge_l(polygon, noise)
   return(polygon)
 }
 
+# create function to grow and manipulate polygons 
 grow_multipolygon_l <- function(base_shape, n, seed = NULL, ...) {
   if(!is.null(seed)) set.seed(seed)
   polygons <- list()
   for(i in 1:n) {
-    polygons[[i]] <- grow_polygon_l(base_shape, ...) |>
-      transpose() |>
-      as_tibble() |>
+    polygons[[i]] <- grow_polygon_l(base_shape, ...) %>% 
+      transpose() %>% 
+      as_tibble() %>% 
       mutate(across(.fn = unlist))
   }
   polygons <- bind_rows(polygons, .id = "id")
   polygons
 }
-
+# creating function to plot multipolygon 
 show_multipolygon <- function(polygon, fill, alpha = .02, ...) {
-  ggplot(polygon, aes(x, y, group = id)) +
+  ggplot(polygon, aes(x, y, group = id)) + 
     geom_polygon(colour = NA, alpha = alpha, fill = fill, ...) + 
     coord_equal() + 
     theme_void()
 }
 
 
-
+# code to make splotch function 
 splotch <- function(seed, layers = 13) {
   set.seed(seed)
-  square_l <- transpose(tibble(
+  square_l <- transpose(tibble( # square data points 
     x = c(0, 1, 1, 0, 0),
     y = c(0, 0, 1, 1, 0),
     seg_len = c(1, 1, 1, 1, 0)
   ))
-  square_l |> 
-    grow_polygon_l(iterations = 10, noise = .5, seed = seed) |>
-    grow_multipolygon_l(n = layers, iterations = 500, noise = .8, seed = seed) 
+  square_l %>% 
+    grow_polygon_l(iterations = 10, noise = .5, seed = seed) %>% 
+    grow_multipolygon_l(n = layers, iterations = 500, noise = .8, seed = seed) # layer various polygons over eachother to create splotch 
 }
 
-dat <- splotch(seed = 1)
+dat <- splotch(seed = 1) # make splotch
 pic <- dat |> show_multipolygon(fill = "#21B6A8", alpha = .3)
-ggsave(
+ggsave( # save splotch as an image in output folder 
   filename = here("output", "mysplotch.png"), 
   plot = pic,
   width = 2000,
@@ -478,26 +484,26 @@ ggsave(
   bg = "black"
 )
 
-
+# code function for making a smudged hexagon 
 smudged_hexagon <- function(seed, noise1 = 0.2, noise2 = 1.5, noise3 = 0.4) {
   set.seed(seed)
   
   # define hexagonal base shape
   theta <- (0:6) * pi / 3
-  hexagon <- tibble(
+  hexagon <- tibble( # store hexagon data 
     x = sin(theta),
     y = cos(theta),
     seg_len = edge_length(x, y, lead(x), lead(y))
   )
   hexagon$seg_len[7] <- 0
-  hexagon <- transpose(hexagon)
+  hexagon <- transpose(hexagon) # store hexagon and base to plot 
   base <- hexagon |> 
     grow_polygon_l(
       iterations = 60, 
       noise = noise1
     )
   
-  # define intermediate-base-shapes in clusters
+  # define intermediate-base-shape clusters
   polygons <- list()
   ijk <- 0
   for(i in 1:3) {
@@ -514,7 +520,7 @@ smudged_hexagon <- function(seed, noise1 = 0.2, noise2 = 1.5, noise3 = 0.4) {
           noise = noise2
         )
       
-      # grow 10 polygons per intermediate-base
+      # per intermediate-base grow 10 polygons
       for(k in 1:10) {
         ijk <- ijk + 1
         polygons[[ijk]] <- base_j |>
@@ -527,7 +533,7 @@ smudged_hexagon <- function(seed, noise1 = 0.2, noise2 = 1.5, noise3 = 0.4) {
           mutate(across(.fn = unlist))
       }
     }
-  }
+  } # code from smudged hexegon r script in materials 
   
   # return as data frame
   bind_rows(polygons, .id = "id")
@@ -555,6 +561,8 @@ ggsave( # save image
 ## Exercise 3. Perlin Heart
 
 ```{r}
+
+# code to plot polygon with linesize and color modified 
 show_polygon <- function(polygon, show_vertices = TRUE, ...) {
   
   pic <- ggplot(polygon, aes(x, y)) +
@@ -568,7 +576,7 @@ show_polygon <- function(polygon, show_vertices = TRUE, ...) {
   }
   return(pic)
 }
-
+# plot axes data for each axis 
 heart_x <- function(angle) {
   x <- (16 * sin(angle) ^ 3) / 17
   return(x - mean(x))
@@ -584,6 +592,7 @@ normalise_radius <- function(x, min, max) {
   normalise(x, from = c(-0.5, 0.5), to = c(min, max))
 }
 
+# code to create perlin heart function from materials file
 perlin_heart <- function(n = 200, 
                          freq_init = 0.8,
                          octaves = 4, 
@@ -594,7 +603,7 @@ perlin_heart <- function(n = 200,
                          id = NA,
                          seed = NULL) {
   if(!is.null(seed)) set.seed(seed)
-  tibble(
+  tibble( # data to plot heart 
     angle = seq(0, 2*pi, length.out = n),
     x_base = cos(angle),
     y_base = sin(angle),
@@ -605,7 +614,7 @@ perlin_heart <- function(n = 200,
       noise = gen_perlin, 
       fractal = fbm, 
       octaves = octaves
-    ) |>
+    ) %>% 
       normalise_radius(r_min, r_max),
     x = radius * heart_x(angle) + x_shift,
     y = radius * heart_y(angle) + y_shift,
@@ -613,7 +622,7 @@ perlin_heart <- function(n = 200,
   )
 }
 
-set.seed(10); 
+set.seed(10); # plot final heart 
 heartpic <- perlin_heart(freq_init = .7) %>% 
   show_polygon(FALSE)
 plot(heartpic)
@@ -622,10 +631,11 @@ plot(heartpic)
 ## Exercise 4. Grid of Hearts
 
 ```{r}
+# code to create perlin heart grid with 10 on x axis and 6 on y 
 perlin_heart_grid <- function(nx = 10, ny = 6, noise = NULL, seed = NULL) {
   if(!is.null(seed)) set.seed(seed)
   
-  heart_settings <- expand_grid(
+  heart_settings <- expand_grid( # set scale for heart 
     r_min = .3, 
     r_max = .4, 
     x_shift = 1:nx, 
@@ -633,18 +643,20 @@ perlin_heart_grid <- function(nx = 10, ny = 6, noise = NULL, seed = NULL) {
   ) |>
     mutate(id = row_number()) 
   
+  # parallel map and bind rows 
   heart_data <-  pmap_dfr(heart_settings, perlin_heart)
   
-  heart_data |>
+  heart_data %>% # create plot out of heart
     ggplot(aes(x, y, group = id, fill = sample(id))) +
     geom_polygon(size = 0, 
-                 alpha = 0.7,
+                 alpha = 0.7, # small and transparent 
                  show.legend = FALSE) +
     theme_void() +
-    scale_fill_gradientn(colours = sample_canva(34)) +
-    coord_equal(xlim = c(0, nx + 1), ylim = c(0, ny + 1))
+    scale_fill_gradientn(colours = sample_canva(34)) + # choosing colors from sample canva function 
+    coord_equal(xlim = c(0, nx + 1), ylim = c(0, ny + 1)) # axis limits beyond hearts 
 }
 
+# plotting final heart
 heartspic <- perlin_heart_grid(seed = 400, noise = 3) 
 plot(heartspic)
 ```
@@ -652,6 +664,7 @@ plot(heartspic)
 ## Exercise 5. Perlin Heart Grid 2
 
 ```{r}
+
 # creating function for x axis angle
 heart_x <- function(angle) {
   x <- (16 * sin(angle) ^ 3) / 17
@@ -664,11 +677,13 @@ heart_y <- function(angle) {
           cos(4 * angle)) / 17
   return(y - mean(y))
 }
-
+# set scale
 normalise_radius <- function(x, min, max) {
   normalise(x, from = c(-0.5, 0.5), to = c(min, max))
 }
 
+
+# function to code perlin_heart2
 perlin_heart2 <- function(n = 200, 
                           freq_init = 0.5,
                           octaves = 2, 
@@ -682,7 +697,7 @@ perlin_heart2 <- function(n = 200,
                           id = NA,
                           seed = NULL) {
   if(!is.null(seed)) set.seed(seed)
-  tibble(
+  tibble( # tibble to generate data for heart 
     angle = seq(0, 2*pi, length.out = n),
     
     radius = fracture(
@@ -692,7 +707,7 @@ perlin_heart2 <- function(n = 200,
       noise = gen_perlin, 
       fractal = fbm, 
       octaves = octaves
-    ) |>
+    ) %>% 
       normalise_radius(r_min, r_max),
     
     x = radius * heart_x(angle) + x_shift,
@@ -705,17 +720,17 @@ perlin_heart2 <- function(n = 200,
       noise = gen_perlin, 
       fractal = fbm, 
       octaves = octaves
-    ) |>
+    ) %>% 
       normalise(to = c(w_min, w_max)),
     
     id = id
   )
 }
-
+# create heart grid with 4 on x axis and 2 on y axis 
 perlin_heart_grid2 <- function(nx = 4, ny = 2, seed = NULL) {
   if(!is.null(seed)) set.seed(seed)
-  
-  heart_settings <- expand_grid(
+  # code to build heart grid
+  heart_settings <- expand_grid( 
     r_min = .3, 
     r_max = .5, 
     w_min = .02,
@@ -731,9 +746,10 @@ perlin_heart_grid2 <- function(nx = 4, ny = 2, seed = NULL) {
       id = row_number()
     ) 
   
+  
   heart_data <-  pmap_dfr(heart_settings, perlin_heart2)
   
-  heart_data |>
+  heart_data %>% #creating plot out of heart data 
     ggplot(aes(x, y, group = id, colour = sample(id), size = width)) +
     geom_path(show.legend = FALSE) +
     theme_void() +
@@ -742,8 +758,9 @@ perlin_heart_grid2 <- function(nx = 4, ny = 2, seed = NULL) {
     scale_x_continuous(expand = c(-1, 0)) +
     scale_y_continuous(expand = c(0, 0)) +
     coord_fixed(xlim = c(0, nx + 1), ylim = c(0, ny + 1))
-}
+} # code from perlin-heart-grid-2.R in files
 
+# final heart grid
 heartgrid2 <- perlin_heart_grid2(seed = 555)
 plot(heartgrid2)
 ```
@@ -766,7 +783,7 @@ leaf <- tree %>%  filter(id_leaf == TRUE)
 base <- ggplot() + 
   scale_size_identity() + 
   theme_void() + # minimalistic theme
-  coord_equal() 
+  coord_equal() # equal axes
 
 # creating a scatterplot for leaves layer 
 leaves <- geom_point(
@@ -778,7 +795,7 @@ leaves <- geom_point(
 )
 
 # creating trunk and branches layer 
-trunk <- geom_bezier(
+trunk <- geom_bezier( # geom to plot each segment as Bezier curve
   mapping = aes(coord_x, coord_y, group = id_pathtree, size = seg_wid),
   data = tree, 
   lineend = "round", 
@@ -828,12 +845,12 @@ base <- ggplot(
   coord_polar(clip = "off") + 
   scale_y_continuous(limits = c(0, 1), oob = scales::oob_keep) +
   scale_x_continuous(limits = c(0, 1), oob = scales::oob_keep) + 
-  scale_colour_viridis_c(option = "plasma") +
+  scale_colour_viridis_c(option = "plasma") + # change colors 
   guides(colour = guide_none(), size = guide_none()) + 
   scale_size(range = c(0, 10)) + 
   theme_void() +
   theme(panel.background = element_rect(fill = "black"))
-
+# plot final with dither
 plot(base + with_ordered_dither(geom_segment()))
 ```
 
