@@ -24,6 +24,10 @@ library(purrr)
 library(ambient)
 library(tictoc)
 library(gifski)
+# pixel filters packages 
+library(ggforce)
+library(ggfx)
+library(flametree)
 
 
 library(here)
@@ -745,4 +749,215 @@ heartgrid2 <- perlin_heart_grid2(seed = 555)
 plot(heartgrid2)
 ```
 
+
 # d. Art of your choice: Pixel Filters
+
+## Exercise 1. Making a tree with flametree package
+
+```{r}
+tree <- flametree_grow( # using flametree_grow function to generate raw data for tree 
+  seed = 7, # changed seed to 7 for new shape of tree
+  time = 10, # increased time to add more complexity 
+  angle = c(-20, 20, 30) 
+)
+
+# create tibble with leaf data 
+leaf <- tree %>%  filter(id_leaf == TRUE) 
+
+# creating a base plot
+base <- ggplot() + 
+  scale_size_identity() + 
+  theme_void() + # minimalistic theme
+  coord_equal() 
+
+# creating a scatterplot for leaves layer 
+leaves <- geom_point(
+  mapping = aes(coord_x, coord_y),
+  data = leaf, # using tibble containing only leaf data 
+  size = 1.5, # making leaves bigger
+  stroke = 0.4, 
+  colour = "#4f772d" # setting leaf color 
+)
+
+# creating trunk and branches layer 
+trunk <- geom_bezier(
+  mapping = aes(coord_x, coord_y, group = id_pathtree, size = seg_wid),
+  data = tree, 
+  lineend = "round", 
+  colour = "#370617", # setting trunk color 
+  show.legend = FALSE
+)
+
+# plotting layer together to make tree 
+plot(base + trunk + leaves)
+
+
+```
+
+## Exercise 2. Adding glow
+
+```{r}
+plot(base + # plotting stylized blank plot
+  trunk + # adding trunk 
+  with_outer_glow(leaves, colour = "#d8f3dc", sigma = 6, expand = 2)) 
+# adding glow with SD of sigma and expansion of 2 pixels 
+```
+
+## Exercise 3. 
+```{r}
+set.seed(3)
+polar <- tibble(
+  arc_start = runif(150),
+  arc_end = arc_start + runif(150, min = -.3, max = .3),
+  radius = runif(150),
+  shade = runif(150), 
+  size = runif(150)
+)
+
+base <- ggplot(
+  data = polar, 
+  mapping = aes(
+    x = arc_start, 
+    y = radius,
+    xend = arc_end, 
+    yend = radius, 
+    colour = shade, 
+    size = size
+  )
+) + 
+  coord_polar(clip = "off") +
+  scale_y_continuous(limits = c(0, 1), oob = scales::oob_keep) +
+  scale_x_continuous(limits = c(0, 1), oob = scales::oob_keep) + 
+  scale_colour_viridis_c(option = "plasma") +
+  guides(colour = guide_none(), size = guide_none()) + 
+  scale_size(range = c(0, 10)) + 
+  theme_void() +
+  theme(panel.background = element_rect(fill = "black"))
+
+plot(base + with_ordered_dither(geom_segment()))
+```
+
+## Exercise 4. Mask
+
+```{r}
+# Creating a textured grid 
+texture <- geom_raster( 
+  mapping = aes(x, y, fill = paint),
+  data = long_grid(
+    x = seq(from = -1, to = 1, length.out = 1000),
+    y = seq(from = -1, to = 1, length.out = 1000)
+  ) %>%  
+    mutate( # changing frequency and seed to produce different layers of texture
+      lf_noise = gen_simplex(x, y, frequency = 10, seed = 1324),
+      mf_noise = gen_simplex(x, y, frequency = 25, seed = 1324),
+      hf_noise = gen_simplex(x, y, frequency = 50, seed = 1324),
+      paint = lf_noise + mf_noise + hf_noise # adding layers of noise
+    )
+)
+
+# code to make hexagon shape, plot it, and add to mask layer
+hex <- tibble(x = sin((0:6)/6 * 2 * pi), y = cos((0:6)/6 * 2 * pi))
+mask <- geom_polygon(aes(x, y), hex, fill = "white")
+
+# creating base plot with empty theme and setting color scheme 
+base <- ggplot() + 
+  theme_void() +
+  coord_equal() + # one unit on x-axis equal to one unit on y-axis
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_fill_gradientn( # setting my own color scheme 
+    colours = c("#81c3d7","#16425b","#d9dcd6", "#3a7ca5","#2f6690"), 
+    guide = guide_none()
+  )
+
+# adding a layer for border to hexagon
+border <- geom_path(aes(x, y), hex, colour = "#d9dcd6", size = 10)
+
+# adding a layer with text
+text <- geom_text(
+  mapping = aes(x, y, label = text, angle = 7), # added an angle to text
+  dat = tibble(x = 0, y = 0, text = "ART"), # create tibble with word to display 
+  size = 35, # text size
+  colour = "#16425b", # changed the color 
+  fontface = "bold" # making the text bold
+) 
+
+plot( # displaying artwork 
+  base + # adding the layers to base plot stylistics 
+    as_group(texture, text, border, id = "content") + 
+    as_reference(mask, id = "mask") + # makes layer able to be mask
+    with_mask("content", "mask") # display the texture when it overlaps with hexagon 
+)
+```
+
+## Exercsie 5. Displace
+
+```{r}
+
+# Creating layers with semi-transparent triangles 
+polygon_layer <- function(x, y, fill = "#457b9d", alpha = .5) {
+  geom_polygon(aes(x, y), fill = fill, alpha = alpha)
+} # Triangle layers 
+poly1 <- polygon_layer(x = c(1, 0, 0), y = c(0, 0, 1))
+poly2 <- polygon_layer(x = c(0, 1, 1), y = c(0, 0, 1))
+poly3 <- polygon_layer(x = c(.4, 1, 1), y = c(0, 0, .6))
+poly4 <- polygon_layer(x = c(0, 0, .4), y = c(.6, 1, 1))
+
+base <- ggplot() + # creating base plot to add layers to
+  coord_equal(xlim = c(0, 1), ylim = c(0, 1)) + # equal axes 
+  theme_void() + # empty theme 
+  theme(panel.background = element_rect(fill = "#457b9d")) # add background color 
+
+text <- geom_text( # add text 
+  mapping = aes(0.4, 0.4, label = "ART"), 
+  size = 50, # made text smaller 
+  colour = "#e63946", # changed color 
+  fontface = "bold"
+)
+
+plot(
+  base + 
+    as_group(poly1, poly2, poly3, poly4, id = "polygons", include = TRUE) +
+    as_reference("polygons", id = "displacement_map") + 
+    with_displacement(
+      text,
+      x_map = ch_alpha("displacement_map"),
+      y_map = ch_alpha("displacement_map"), 
+      x_scale = 100,
+      y_scale = -100
+    )
+)
+
+```
+
+## Exercise 6. Blend
+
+```{r}
+
+# adding blend and triangle to my tree art 
+# creating triangle layer
+triangle <- polygon_layer(
+  x = c(-4, 2, 2), # dimensions of triangle
+  y = c(0, 0, 6), 
+  fill = "#84a98c", # changing the color
+  alpha = 1 # opaque
+)
+
+base <- ggplot() + # creating base plot to add layers to
+  theme_void() + # with empty theme
+  theme(panel.background = element_rect( # black background 
+    fill = "#a8dadc", colour = "#a8dadc"
+  )) + 
+  coord_equal(xlim = c(-3, 1), ylim = c(1, 5)) + # dimensions of axes
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_size_identity(guide = guide_none())
+
+plot( # plotting layers on base plot 
+  base +
+    as_group(trunk, leaves, id = "tree") + # grouping tree layers together
+    with_blend(triangle, "tree", blend_type = "xor") # adding images together
+)
+
+```
+
