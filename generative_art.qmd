@@ -34,7 +34,6 @@ library(here)
 
 ```
 
-
 # Getting Started
 
 ## Exercise 1. Art is theft
@@ -534,10 +533,10 @@ smudged_hexagon <- function(seed, noise1 = 0.2, noise2 = 1.5, noise3 = 0.4) {
   bind_rows(polygons, .id = "id")
 }
 
-
+# add smudged hexagon
 dat <- smudged_hexagon(seed = 88)
 pic <- dat |> show_multipolygon(fill = "#F582A8", alpha = 0.5)
-ggsave(
+ggsave( # save image 
   filename = here("output", "mysmudged-hexagon.png"), 
   plot = pic,
   width = 2000,
@@ -749,7 +748,6 @@ heartgrid2 <- perlin_heart_grid2(seed = 555)
 plot(heartgrid2)
 ```
 
-
 # d. Art of your choice: Pixel Filters
 
 ## Exercise 1. Making a tree with flametree package
@@ -803,10 +801,11 @@ plot(base + # plotting stylized blank plot
 # adding glow with SD of sigma and expansion of 2 pixels 
 ```
 
-## Exercise 3. 
+## Exercise 3.
+
 ```{r}
-set.seed(3)
-polar <- tibble(
+set.seed(3) # setting seed for randomization
+polar <- tibble( # generate data for polar plot 
   arc_start = runif(150),
   arc_end = arc_start + runif(150, min = -.3, max = .3),
   radius = runif(150),
@@ -814,6 +813,7 @@ polar <- tibble(
   size = runif(150)
 )
 
+# base plot to add on 
 base <- ggplot(
   data = polar, 
   mapping = aes(
@@ -825,7 +825,7 @@ base <- ggplot(
     size = size
   )
 ) + 
-  coord_polar(clip = "off") +
+  coord_polar(clip = "off") + 
   scale_y_continuous(limits = c(0, 1), oob = scales::oob_keep) +
   scale_x_continuous(limits = c(0, 1), oob = scales::oob_keep) + 
   scale_colour_viridis_c(option = "plasma") +
@@ -915,12 +915,12 @@ text <- geom_text( # add text
   fontface = "bold"
 )
 
-plot(
+plot( # make final plot
   base + 
-    as_group(poly1, poly2, poly3, poly4, id = "polygons", include = TRUE) +
+    as_group(poly1, poly2, poly3, poly4, id = "polygons", include = TRUE) + # group triangles to make displacement map
     as_reference("polygons", id = "displacement_map") + 
     with_displacement(
-      text,
+      text, # distort text
       x_map = ch_alpha("displacement_map"),
       y_map = ch_alpha("displacement_map"), 
       x_scale = 100,
@@ -961,62 +961,80 @@ plot( # plotting layers on base plot
 
 ```
 
-# e. Put it All Together 
+# e. Put it All Together
 
 ## Piece #1
 
 ```{r}
-# Creating background layer 
-
 colors1 <- c("#780000","#fb6f92","#0096c7") # creating color palette
-# making function to get more colors along spectrum 
+# making function to get 100 colors between them 
 colors1_fn <- colorRampPalette(colors1)
-colors1_palette <- colors1_fn(100)
+colors1_palette <- colors1_fn(100) # storing as a palette
 
 
 # create data for 3 layers 
-datlavina <- sample_data(seed = 1, n = 75)
-datala <- sample_data(seed = 2, n = 75)
-datbecca <- sample_data(seed = 3, n = 75)
+datlavina <- sample_data(seed = 1, n = 75) # lavina data 
+datala <- sample_data(seed = 2, n = 75) # ala data
+datbecca <- sample_data(seed = 3, n = 75) # becca data 
 
 # creating lavina layer 
-lavina_plot <- my_styled_plot(datlavina,
-                              palette = colors1_palette) + 
-  geom_point(data = datlavina %>% mutate(size = size * 2), 
-             shape = 18) +
-  geom_point(data = datlavina %>% mutate(shade = shade / 0.5), 
-             shape = 18)
+lavina_plot <- my_styled_plot(datlavina, # using my styled plot from intro
+                              palette = colors1_palette) + # using palette I created
+  geom_point(data = datlavina %>% mutate(size = size * 2), # making points larger
+             shape = 18) + # diamond shape
+  geom_point(data = datlavina %>% mutate(shade = shade / 0.5), # varying shade from points above
+             shape = 18) 
   
   
 # creating ala layer 
-ala_plot <- my_styled_plot(datala,
+ala_plot <- my_styled_plot(datala, 
                            palette = colors1_palette) + 
   geom_segment(data = datala, # adding dashed lines
                linetype = "dotdash",
                lineend = "round",
-               linewidth = 2) + 
+               linewidth = 2) + # make lines thinner 
   geom_curve(data = datala, # adding curved lines
              lineend = "round",
              linewidth = 2)
+  
+  
 
 # creating becca layer 
 becca_plot <- my_styled_plot(datbecca, # using becca data 
                              palette = colors1_palette) + 
-  geom_point(data = datbecca %>% mutate(shade = shade * 3),
+  geom_point(data = datbecca %>% mutate(shade = shade * 3), # varying shade of circles
              shape = 16, # create transparent circles
              alpha = 0.5) + 
-  geom_point(data = datbecca %>% mutate(size = size * 1.5),
+  geom_point(data = datbecca %>% mutate(size = size * 1.5), # changing size 
              shape = 21) # create larger circle outlines
+  
+# adding pink splotch
+splotch <- show_multipolygon(splotch(seed = 60), "#fb6f92", alpha = 0.1)
+
 
 library(patchwork)
 # plot it all together 
-plot(lavina_plot + ala_plot + becca_plot)
+friends_plot <- print(lavina_plot + ala_plot + becca_plot)
+
+ggsave( # same image to output folder
+  filename = here("output", "friendsplot.png"), 
+  plot = friends_plot,
+  width = 2000,
+  height = 2000,
+  units = "px",
+  dpi = 300,
+  bg = "black"
+)
 
 ```
 
+![](output/friendsplot.png){fig-align="center"}
+
+Figure 1. Lavina, Ala, and Becca 06-14-2024 My inspiration for this piece was to create something to represent my best friends and me. I created a color palette out of each of our favorite colors and made geometric patterns to represent our personalities. I incorporated the color palette customization, sample data function, and styled plot I generated from the introductory exercises. From the polygon tricks section I learned how to save the plot as an image and incorporated the plotting of multiple layers from the pixel filters.
+
 ## Piece #2
 
-```{r} 
+```{r}
 # making base plot to add everything to
 base <- ggplot() + 
   theme_void() +
@@ -1025,7 +1043,7 @@ base <- ggplot() +
   scale_x_continuous(expand = c(0, 0)) +
   scale_y_continuous(expand = c(0, 0)) +
   scale_fill_gradientn(
-    colours = colors1_palette, 
+    colours = colors1_palette, # add my color palette
     guide = guide_none()
   ) 
 
@@ -1056,38 +1074,44 @@ texture <- geom_raster(
 # creating border 
 border <- geom_path(aes(x, y), circle, colour = "#0096c7", size = 15)
 
-
+# plotting final plot 
 plot(base + 
-    as_group(texture, border, id = "content") +
-    as_reference(mask, id = "mask") + 
-    with_mask("content", "mask") + 
-      with_inner_glow(border, color = "white")
+    as_group(texture, border, id = "content") + 
+    as_reference(mask, id = "mask") + # creating mask
+    with_mask("content", "mask") + # hide texture except in circle
+      with_inner_glow(border, color = "white") # add glow
     )
 
 
 
 ```
 
-## Piece #3. 
+Figure 2. Under the Microscope 06-14-2024
+
+I was inspired by the texture exercise in the pixel filters section, when playing around with it, the patterns reminded me of looking through a microscope. I wanted to keep the color scheme consistent across all three pieces. I incorporated the texture and masking from the pixel filter section and I learned how to make the circle and border in the polygon tricks section. I utilized the same color palette I learned to make in the introductory section and played around with emulating depth by adding glow.
+
+## Piece #3.
 
 ```{r}
 
 # adding heart grid code
-heart_x <- function(angle) {
+heart_x <- function(angle) { # heart x data
   x <- (16 * sin(angle) ^ 3) / 17
   return(x - mean(x))
 }
 
-heart_y <- function(angle) {
+heart_y <- function(angle) { # heart y data
   y <- (13 * cos(angle) - 5 * cos(2 * angle) - 2 * cos(3 * angle) -
           cos(4 * angle)) / 17
   return(y - mean(y))
 }
 
+# scaling radius in set range 
 normalise_radius <- function(x, min, max) {
   normalise(x, from = c(-0.5, 0.5), to = c(min, max))
 }
 
+# create perlin heart function
 perlin_heart <- function(n = 50, 
                          freq_init = 0.3,
                          octaves = 2, 
@@ -1117,6 +1141,7 @@ perlin_heart <- function(n = 50,
   )
 }
 
+# make perlin heart grid with 15 hearts on x axis and 10 on y
 perlin_heart_grid <- function(nx = 15, ny = 10, seed = NULL) {
   if(!is.null(seed)) set.seed(seed)
   
@@ -1130,7 +1155,7 @@ perlin_heart_grid <- function(nx = 15, ny = 10, seed = NULL) {
   
   heart_data <-  pmap_dfr(heart_settings, perlin_heart)
   
-  heart_data %>% 
+  heart_data %>%  # plotting hearts with my color palette
     ggplot(aes(x, y, group = id, fill = sample(id))) +
     geom_polygon(size = 0, show.legend = FALSE) +
     theme_void() +
@@ -1138,13 +1163,15 @@ perlin_heart_grid <- function(nx = 15, ny = 10, seed = NULL) {
     coord_equal(xlim = c(0, nx + 1), ylim = c(0, ny + 1))
 }
 
+# creating a plot of blurry hearts
+friendhearts <- perlin_heart_grid(seed = 41) %>% 
+  with_blur(sigma = 6, expand = 10) 
 
-bluehearts <- perlin_heart_grid(seed = 41) %>% 
-  with_blur(sigma = 3, expand = 10) 
-
-funkyhearts <- plot(with_ordered_dither(bluehearts))
-
+# final plot with dither
+funkyhearts <- plot(with_ordered_dither(friendhearts))
 
 ```
 
+Figure 3. Love & Friendship 06-14-2024
 
+Building off of the previous pieces, I wanted to make another piece inspired by my friend group. I wanted to incorporate more colorful elements and this dither reminded me of a quilt. This piece reminds me of friendship in that it comes in all different forms but always with love. I really enjoyed working with plotting hearts in the polygon tricks section and the ggfx package from the pixel filters section and wanted to combine the two. I modified the code from perlin-heart-grid.R to plot more hearts and modified the appearance of the hearts using dither and blur.
