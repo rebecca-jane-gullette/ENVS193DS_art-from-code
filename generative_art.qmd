@@ -1021,7 +1021,7 @@ plot(lavina_plot + ala_plot + becca_plot)
 base <- ggplot() + 
   theme_void() +
   coord_equal() +
-  theme(panel.background = element_rect(fill = "#fb6f92")) +
+  theme(panel.background = element_rect(fill = "#fb6f92")) + # pink background
   scale_x_continuous(expand = c(0, 0)) +
   scale_y_continuous(expand = c(0, 0)) +
   scale_fill_gradientn(
@@ -1030,21 +1030,20 @@ base <- ggplot() +
   ) 
 
 # creating a circle 
-circle <- tibble(
+circle <- tibble( # code to make circle
   angle = seq(0, 2*pi, length.out = 50),
   x = cos(angle),
   y = sin(angle)
 )
 
 # create texture 
-
-texture <- geom_raster(
+texture <- geom_raster( 
   mapping = aes(x, y, fill = paint),
-  data = long_grid(
+  data = long_grid( # code for data 
     x = seq(from = -1, to = 1, length.out = 800),
     y = seq(from = -1, to = 1, length.out = 800)
   ) |> 
-    mutate(
+    mutate( # code for texture
       lf_noise = gen_simplex(x, y, frequency = 15, seed = 1200),
       mf_noise = gen_simplex(x, y, frequency = 1, seed = 1050),
       hf_noise = gen_simplex(x, y, frequency = 20, seed = 1200),
@@ -1058,7 +1057,7 @@ texture <- geom_raster(
 border <- geom_path(aes(x, y), circle, colour = "#0096c7", size = 15)
 
 
-funkycircle_plot <- plot(base + 
+plot(base + 
     as_group(texture, border, id = "content") +
     as_reference(mask, id = "mask") + 
     with_mask("content", "mask") + 
@@ -1071,6 +1070,81 @@ funkycircle_plot <- plot(base +
 
 ## Piece #3. 
 
+```{r}
 
+# adding heart grid code
+heart_x <- function(angle) {
+  x <- (16 * sin(angle) ^ 3) / 17
+  return(x - mean(x))
+}
+
+heart_y <- function(angle) {
+  y <- (13 * cos(angle) - 5 * cos(2 * angle) - 2 * cos(3 * angle) -
+          cos(4 * angle)) / 17
+  return(y - mean(y))
+}
+
+normalise_radius <- function(x, min, max) {
+  normalise(x, from = c(-0.5, 0.5), to = c(min, max))
+}
+
+perlin_heart <- function(n = 50, 
+                         freq_init = 0.3,
+                         octaves = 2, 
+                         r_min = 0.5, 
+                         r_max = 1,
+                         x_shift = 0,
+                         y_shift = 0,
+                         id = NA,
+                         seed = NULL) {
+  if(!is.null(seed)) set.seed(seed)
+  tibble(
+    angle = seq(0, 2*pi, length.out = n),
+    x_base = cos(angle),
+    y_base = sin(angle),
+    radius = fracture(
+      x = x_base, 
+      y = y_base, 
+      freq_init = freq_init,
+      noise = gen_perlin, 
+      fractal = fbm, 
+      octaves = octaves
+    ) |>
+      normalise_radius(r_min, r_max),
+    x = radius * heart_x(angle) + x_shift,
+    y = radius * heart_y(angle) + y_shift,
+    id = id
+  )
+}
+
+perlin_heart_grid <- function(nx = 15, ny = 10, seed = NULL) {
+  if(!is.null(seed)) set.seed(seed)
+  
+  heart_settings <- expand_grid(
+    r_min = .3, 
+    r_max = .4, 
+    x_shift = 1:nx, 
+    y_shift = 1:ny
+  ) |>
+    mutate(id = row_number()) 
+  
+  heart_data <-  pmap_dfr(heart_settings, perlin_heart)
+  
+  heart_data %>% 
+    ggplot(aes(x, y, group = id, fill = sample(id))) +
+    geom_polygon(size = 0, show.legend = FALSE) +
+    theme_void() +
+    scale_fill_gradientn(colours = colors1_palette) +
+    coord_equal(xlim = c(0, nx + 1), ylim = c(0, ny + 1))
+}
+
+
+bluehearts <- perlin_heart_grid(seed = 41) %>% 
+  with_blur(sigma = 3, expand = 10) 
+
+funkyhearts <- plot(with_ordered_dither(bluehearts))
+
+
+```
 
 
