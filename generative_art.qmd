@@ -1031,7 +1031,7 @@ splotch <- show_multipolygon(splotch(seed = 60), "#fb6f92", alpha = 0.1)
 
 library(patchwork)
 # plot it all together 
-friends_plot <- print(lavina_plot + ala_plot + becca_plot)
+friends_plot <- plot(lavina_plot + ala_plot + becca_plot)
 
 ggsave( # same image to output folder
   filename = here("output", "friendsplot.png"), 
