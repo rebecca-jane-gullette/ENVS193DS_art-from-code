@@ -7,9 +7,7 @@ execute:
   message: true
 format: html
 website: 
-  navbar: 
-  background: primary
-  search: true
+  sidebar:
 ---
 
 ```{r}
