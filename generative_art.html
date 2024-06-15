@@ -539,7 +539,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">toc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>2.462 sec elapsed</code></pre>
+<pre><code>2.421 sec elapsed</code></pre>
 </div>
 </div>
 </section>
@@ -784,9 +784,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb15-57"><a href="#cb15-57" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb15-58"><a href="#cb15-58" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-59"><a href="#cb15-59" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">10</span>); </span>
-<span id="cb15-60"><a href="#cb15-60" aria-hidden="true" tabindex="-1"></a>pic <span class="ot">&lt;-</span> <span class="fu">perlin_heart</span>(<span class="at">freq_init =</span> .<span class="dv">7</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb15-60"><a href="#cb15-60" aria-hidden="true" tabindex="-1"></a>heartpic <span class="ot">&lt;-</span> <span class="fu">perlin_heart</span>(<span class="at">freq_init =</span> .<span class="dv">7</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb15-61"><a href="#cb15-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show_polygon</span>(<span class="cn">FALSE</span>)</span>
-<span id="cb15-62"><a href="#cb15-62" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pic)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-62"><a href="#cb15-62" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(heartpic)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1201,13 +1201,44 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>colors1_fn <span class="ot">&lt;-</span> <span class="fu">colorRampPalette</span>(colors1)</span>
 <span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>colors1_palette <span class="ot">&lt;-</span> <span class="fu">colors1_fn</span>(<span class="dv">100</span>)</span>
 <span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="co"># creating image of these colors </span></span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>colors1_background <span class="ot">&lt;-</span> <span class="fu">image</span>(</span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>, <span class="at">ncol =</span> <span class="dv">1</span>), </span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">col =</span> <span class="fu">colors1_fn</span>(<span class="dv">100</span>),</span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">useRaster =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">axes =</span> <span class="cn">FALSE</span></span>
-<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="co"># create data for 3 layers </span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>datlavina <span class="ot">&lt;-</span> <span class="fu">sample_data</span>(<span class="at">seed =</span> <span class="dv">1</span>, <span class="at">n =</span> <span class="dv">75</span>)</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>datala <span class="ot">&lt;-</span> <span class="fu">sample_data</span>(<span class="at">seed =</span> <span class="dv">2</span>, <span class="at">n =</span> <span class="dv">75</span>)</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>datbecca <span class="ot">&lt;-</span> <span class="fu">sample_data</span>(<span class="at">seed =</span> <span class="dv">3</span>, <span class="at">n =</span> <span class="dv">75</span>)</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a><span class="co"># creating lavina layer </span></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>lavina_plot <span class="ot">&lt;-</span> <span class="fu">my_styled_plot</span>(datlavina,</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>                              <span class="at">palette =</span> colors1_palette) <span class="sc">+</span> </span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> datlavina <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">size =</span> size <span class="sc">*</span> <span class="dv">2</span>), </span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">18</span>) <span class="sc">+</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> datlavina <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">shade =</span> shade <span class="sc">/</span> <span class="fl">0.5</span>), </span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">18</span>)</span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a><span class="co"># creating ala layer </span></span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>ala_plot <span class="ot">&lt;-</span> <span class="fu">my_styled_plot</span>(datala,</span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>                           <span class="at">palette =</span> colors1_palette) <span class="sc">+</span> </span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="at">data =</span> datala, <span class="co"># adding dashed lines</span></span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a>               <span class="at">linetype =</span> <span class="st">"dotdash"</span>,</span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a>               <span class="at">lineend =</span> <span class="st">"round"</span>,</span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a>               <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
+<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_curve</span>(<span class="at">data =</span> datala, <span class="co"># adding curved lines</span></span>
+<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a>             <span class="at">lineend =</span> <span class="st">"round"</span>,</span>
+<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a>             <span class="at">linewidth =</span> <span class="dv">2</span>)</span>
+<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a><span class="co"># creating becca layer </span></span>
+<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a>becca_plot <span class="ot">&lt;-</span> <span class="fu">my_styled_plot</span>(datbecca, <span class="co"># using becca data </span></span>
+<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a>                             <span class="at">palette =</span> colors1_palette) <span class="sc">+</span> </span>
+<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> datbecca <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">shade =</span> shade <span class="sc">*</span> <span class="dv">3</span>),</span>
+<span id="cb25-38"><a href="#cb25-38" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">16</span>, <span class="co"># create transparent circles</span></span>
+<span id="cb25-39"><a href="#cb25-39" aria-hidden="true" tabindex="-1"></a>             <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span> </span>
+<span id="cb25-40"><a href="#cb25-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> datbecca <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">size =</span> size <span class="sc">*</span> <span class="fl">1.5</span>),</span>
+<span id="cb25-41"><a href="#cb25-41" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">21</span>) <span class="co"># create larger circle outlines</span></span>
+<span id="cb25-42"><a href="#cb25-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-43"><a href="#cb25-43" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb25-44"><a href="#cb25-44" aria-hidden="true" tabindex="-1"></a><span class="co"># plot it all together </span></span>
+<span id="cb25-45"><a href="#cb25-45" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(lavina_plot <span class="sc">+</span> ala_plot <span class="sc">+</span> becca_plot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1215,46 +1246,144 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create data for 3 layers </span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>datlavina <span class="ot">&lt;-</span> <span class="fu">sample_data</span>(<span class="at">seed =</span> <span class="dv">1</span>, <span class="at">n =</span> <span class="dv">75</span>)</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>datala <span class="ot">&lt;-</span> <span class="fu">sample_data</span>(<span class="at">seed =</span> <span class="dv">2</span>, <span class="at">n =</span> <span class="dv">75</span>)</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>datbecca <span class="ot">&lt;-</span> <span class="fu">sample_data</span>(<span class="at">seed =</span> <span class="dv">3</span>, <span class="at">n =</span> <span class="dv">75</span>)</span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="co"># creating lavina layer </span></span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>lavina_plot <span class="ot">&lt;-</span> <span class="fu">my_styled_plot</span>(datlavina,</span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>                              <span class="at">palette =</span> colors1_palette) <span class="sc">+</span> </span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> datlavina <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">size =</span> size <span class="sc">*</span> <span class="dv">2</span>), </span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">18</span>) <span class="sc">+</span></span>
-<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> datlavina <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">shade =</span> shade <span class="sc">/</span> <span class="fl">0.5</span>), </span>
-<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">18</span>)</span>
-<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a><span class="co"># creating ala layer </span></span>
-<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>ala_plot <span class="ot">&lt;-</span> <span class="fu">my_styled_plot</span>(datala,</span>
-<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>                           <span class="at">palette =</span> colors1_palette) <span class="sc">+</span> </span>
-<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="at">data =</span> datala, <span class="co"># adding dashed lines</span></span>
-<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>               <span class="at">linetype =</span> <span class="st">"dotdash"</span>,</span>
-<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>               <span class="at">lineend =</span> <span class="st">"round"</span>,</span>
-<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>               <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
-<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_curve</span>(<span class="at">data =</span> datala, <span class="co"># adding curved lines</span></span>
-<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>             <span class="at">lineend =</span> <span class="st">"round"</span>,</span>
-<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>             <span class="at">linewidth =</span> <span class="dv">2</span>)</span>
-<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a><span class="co"># creating becca layer </span></span>
-<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>becca_plot <span class="ot">&lt;-</span> <span class="fu">my_styled_plot</span>(datbecca, <span class="co"># using becca data </span></span>
-<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>                             <span class="at">palette =</span> colors1_palette) <span class="sc">+</span> </span>
-<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> datbecca <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">shade =</span> shade <span class="sc">*</span> <span class="dv">3</span>),</span>
-<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">16</span>, <span class="co"># create transparent circles</span></span>
-<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>             <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span> </span>
-<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> datbecca <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">size =</span> size <span class="sc">*</span> <span class="fl">1.5</span>),</span>
-<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">21</span>) <span class="co"># create larger circle outlines</span></span>
-<span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-34"><a href="#cb26-34" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
-<span id="cb26-35"><a href="#cb26-35" aria-hidden="true" tabindex="-1"></a><span class="co"># plot it all together </span></span>
-<span id="cb26-36"><a href="#cb26-36" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(lavina_plot <span class="sc">+</span> ala_plot <span class="sc">+</span> becca_plot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="piece-2" class="level2">
+<h2 class="anchored" data-anchor-id="piece-2">Piece #2</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># making base plot to add everything to</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>base <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_equal</span>() <span class="sc">+</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#fb6f92"</span>)) <span class="sc">+</span> <span class="co"># pink background</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>)) <span class="sc">+</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>)) <span class="sc">+</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradientn</span>(</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">colours =</span> colors1_palette, </span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">guide =</span> <span class="fu">guide_none</span>()</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="co"># creating a circle </span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>circle <span class="ot">&lt;-</span> <span class="fu">tibble</span>( <span class="co"># code to make circle</span></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">angle =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span><span class="sc">*</span>pi, <span class="at">length.out =</span> <span class="dv">50</span>),</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">cos</span>(angle),</span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">sin</span>(angle)</span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a><span class="co"># create texture </span></span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>texture <span class="ot">&lt;-</span> <span class="fu">geom_raster</span>( </span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">mapping =</span> <span class="fu">aes</span>(x, y, <span class="at">fill =</span> paint),</span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">long_grid</span>( <span class="co"># code for data </span></span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">to =</span> <span class="dv">1</span>, <span class="at">length.out =</span> <span class="dv">800</span>),</span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">to =</span> <span class="dv">1</span>, <span class="at">length.out =</span> <span class="dv">800</span>)</span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>( <span class="co"># code for texture</span></span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>      <span class="at">lf_noise =</span> <span class="fu">gen_simplex</span>(x, y, <span class="at">frequency =</span> <span class="dv">15</span>, <span class="at">seed =</span> <span class="dv">1200</span>),</span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a>      <span class="at">mf_noise =</span> <span class="fu">gen_simplex</span>(x, y, <span class="at">frequency =</span> <span class="dv">1</span>, <span class="at">seed =</span> <span class="dv">1050</span>),</span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>      <span class="at">hf_noise =</span> <span class="fu">gen_simplex</span>(x, y, <span class="at">frequency =</span> <span class="dv">20</span>, <span class="at">seed =</span> <span class="dv">1200</span>),</span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">paint =</span> lf_noise <span class="sc">+</span> mf_noise <span class="sc">+</span> hf_noise</span>
+<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb26-34"><a href="#cb26-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-35"><a href="#cb26-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-36"><a href="#cb26-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-37"><a href="#cb26-37" aria-hidden="true" tabindex="-1"></a><span class="co"># creating border </span></span>
+<span id="cb26-38"><a href="#cb26-38" aria-hidden="true" tabindex="-1"></a>border <span class="ot">&lt;-</span> <span class="fu">geom_path</span>(<span class="fu">aes</span>(x, y), circle, <span class="at">colour =</span> <span class="st">"#0096c7"</span>, <span class="at">size =</span> <span class="dv">15</span>)</span>
+<span id="cb26-39"><a href="#cb26-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-40"><a href="#cb26-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-41"><a href="#cb26-41" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(base <span class="sc">+</span> </span>
+<span id="cb26-42"><a href="#cb26-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as_group</span>(texture, border, <span class="at">id =</span> <span class="st">"content"</span>) <span class="sc">+</span></span>
+<span id="cb26-43"><a href="#cb26-43" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as_reference</span>(mask, <span class="at">id =</span> <span class="st">"mask"</span>) <span class="sc">+</span> </span>
+<span id="cb26-44"><a href="#cb26-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">with_mask</span>(<span class="st">"content"</span>, <span class="st">"mask"</span>) <span class="sc">+</span> </span>
+<span id="cb26-45"><a href="#cb26-45" aria-hidden="true" tabindex="-1"></a>      <span class="fu">with_inner_glow</span>(border, <span class="at">color =</span> <span class="st">"white"</span>)</span>
+<span id="cb26-46"><a href="#cb26-46" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="generative_art_files/figure-html/unnamed-chunk-22-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="generative_art_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="piece-3." class="level2">
+<h2 class="anchored" data-anchor-id="piece-3.">Piece #3.</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># adding heart grid code</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>heart_x <span class="ot">&lt;-</span> <span class="cf">function</span>(angle) {</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> (<span class="dv">16</span> <span class="sc">*</span> <span class="fu">sin</span>(angle) <span class="sc">^</span> <span class="dv">3</span>) <span class="sc">/</span> <span class="dv">17</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(x <span class="sc">-</span> <span class="fu">mean</span>(x))</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>heart_y <span class="ot">&lt;-</span> <span class="cf">function</span>(angle) {</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> (<span class="dv">13</span> <span class="sc">*</span> <span class="fu">cos</span>(angle) <span class="sc">-</span> <span class="dv">5</span> <span class="sc">*</span> <span class="fu">cos</span>(<span class="dv">2</span> <span class="sc">*</span> angle) <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">cos</span>(<span class="dv">3</span> <span class="sc">*</span> angle) <span class="sc">-</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>          <span class="fu">cos</span>(<span class="dv">4</span> <span class="sc">*</span> angle)) <span class="sc">/</span> <span class="dv">17</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(y <span class="sc">-</span> <span class="fu">mean</span>(y))</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>normalise_radius <span class="ot">&lt;-</span> <span class="cf">function</span>(x, min, max) {</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">normalise</span>(x, <span class="at">from =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>), <span class="at">to =</span> <span class="fu">c</span>(min, max))</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>perlin_heart <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n =</span> <span class="dv">50</span>, </span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>                         <span class="at">freq_init =</span> <span class="fl">0.3</span>,</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>                         <span class="at">octaves =</span> <span class="dv">2</span>, </span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>                         <span class="at">r_min =</span> <span class="fl">0.5</span>, </span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>                         <span class="at">r_max =</span> <span class="dv">1</span>,</span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>                         <span class="at">x_shift =</span> <span class="dv">0</span>,</span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>                         <span class="at">y_shift =</span> <span class="dv">0</span>,</span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a>                         <span class="at">id =</span> <span class="cn">NA</span>,</span>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a>                         <span class="at">seed =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.null</span>(seed)) <span class="fu">set.seed</span>(seed)</span>
+<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">angle =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span><span class="sc">*</span>pi, <span class="at">length.out =</span> n),</span>
+<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">x_base =</span> <span class="fu">cos</span>(angle),</span>
+<span id="cb27-30"><a href="#cb27-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">y_base =</span> <span class="fu">sin</span>(angle),</span>
+<span id="cb27-31"><a href="#cb27-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">radius =</span> <span class="fu">fracture</span>(</span>
+<span id="cb27-32"><a href="#cb27-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> x_base, </span>
+<span id="cb27-33"><a href="#cb27-33" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> y_base, </span>
+<span id="cb27-34"><a href="#cb27-34" aria-hidden="true" tabindex="-1"></a>      <span class="at">freq_init =</span> freq_init,</span>
+<span id="cb27-35"><a href="#cb27-35" aria-hidden="true" tabindex="-1"></a>      <span class="at">noise =</span> gen_perlin, </span>
+<span id="cb27-36"><a href="#cb27-36" aria-hidden="true" tabindex="-1"></a>      <span class="at">fractal =</span> fbm, </span>
+<span id="cb27-37"><a href="#cb27-37" aria-hidden="true" tabindex="-1"></a>      <span class="at">octaves =</span> octaves</span>
+<span id="cb27-38"><a href="#cb27-38" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb27-39"><a href="#cb27-39" aria-hidden="true" tabindex="-1"></a>      <span class="fu">normalise_radius</span>(r_min, r_max),</span>
+<span id="cb27-40"><a href="#cb27-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> radius <span class="sc">*</span> <span class="fu">heart_x</span>(angle) <span class="sc">+</span> x_shift,</span>
+<span id="cb27-41"><a href="#cb27-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> radius <span class="sc">*</span> <span class="fu">heart_y</span>(angle) <span class="sc">+</span> y_shift,</span>
+<span id="cb27-42"><a href="#cb27-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">id =</span> id</span>
+<span id="cb27-43"><a href="#cb27-43" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb27-44"><a href="#cb27-44" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb27-45"><a href="#cb27-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-46"><a href="#cb27-46" aria-hidden="true" tabindex="-1"></a>perlin_heart_grid <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">nx =</span> <span class="dv">15</span>, <span class="at">ny =</span> <span class="dv">10</span>, <span class="at">seed =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb27-47"><a href="#cb27-47" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.null</span>(seed)) <span class="fu">set.seed</span>(seed)</span>
+<span id="cb27-48"><a href="#cb27-48" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-49"><a href="#cb27-49" aria-hidden="true" tabindex="-1"></a>  heart_settings <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(</span>
+<span id="cb27-50"><a href="#cb27-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">r_min =</span> .<span class="dv">3</span>, </span>
+<span id="cb27-51"><a href="#cb27-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">r_max =</span> .<span class="dv">4</span>, </span>
+<span id="cb27-52"><a href="#cb27-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">x_shift =</span> <span class="dv">1</span><span class="sc">:</span>nx, </span>
+<span id="cb27-53"><a href="#cb27-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">y_shift =</span> <span class="dv">1</span><span class="sc">:</span>ny</span>
+<span id="cb27-54"><a href="#cb27-54" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb27-55"><a href="#cb27-55" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">id =</span> <span class="fu">row_number</span>()) </span>
+<span id="cb27-56"><a href="#cb27-56" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-57"><a href="#cb27-57" aria-hidden="true" tabindex="-1"></a>  heart_data <span class="ot">&lt;-</span>  <span class="fu">pmap_dfr</span>(heart_settings, perlin_heart)</span>
+<span id="cb27-58"><a href="#cb27-58" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-59"><a href="#cb27-59" aria-hidden="true" tabindex="-1"></a>  heart_data <span class="sc">%&gt;%</span> </span>
+<span id="cb27-60"><a href="#cb27-60" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(x, y, <span class="at">group =</span> id, <span class="at">fill =</span> <span class="fu">sample</span>(id))) <span class="sc">+</span></span>
+<span id="cb27-61"><a href="#cb27-61" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_polygon</span>(<span class="at">size =</span> <span class="dv">0</span>, <span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb27-62"><a href="#cb27-62" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb27-63"><a href="#cb27-63" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_gradientn</span>(<span class="at">colours =</span> colors1_palette) <span class="sc">+</span></span>
+<span id="cb27-64"><a href="#cb27-64" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_equal</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, nx <span class="sc">+</span> <span class="dv">1</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, ny <span class="sc">+</span> <span class="dv">1</span>))</span>
+<span id="cb27-65"><a href="#cb27-65" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb27-66"><a href="#cb27-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-67"><a href="#cb27-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-68"><a href="#cb27-68" aria-hidden="true" tabindex="-1"></a>bluehearts <span class="ot">&lt;-</span> <span class="fu">perlin_heart_grid</span>(<span class="at">seed =</span> <span class="dv">41</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb27-69"><a href="#cb27-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">with_blur</span>(<span class="at">sigma =</span> <span class="dv">3</span>, <span class="at">expand =</span> <span class="dv">10</span>) </span>
+<span id="cb27-70"><a href="#cb27-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-71"><a href="#cb27-71" aria-hidden="true" tabindex="-1"></a>funkyhearts <span class="ot">&lt;-</span> <span class="fu">plot</span>(<span class="fu">with_ordered_dither</span>(bluehearts))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="generative_art_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
